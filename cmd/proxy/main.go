@@ -33,7 +33,7 @@ func main() {
 	)
 
 	// 3. Создание прокси с кэшем (LFU)
-	proxy, err := proxy.NewReverseProxy(cfg.TargetURL, cfg.CacheTTL)
+	proxy, err := proxy.NewReverseProxy(cfg)
 	if err != nil {
 		slog.Error("Failed to create proxy", "error", err)
 		os.Exit(1)
