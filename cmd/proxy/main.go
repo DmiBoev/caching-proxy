@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/DmiBoev/caching-proxy/internal/config"
+	"github.com/DmiBoev/caching-proxy/internal/logger"
 	"github.com/DmiBoev/caching-proxy/internal/proxy"
 )
 
@@ -23,15 +24,16 @@ func main() {
 	}
 
 	// 2. Инициализация логгера
-	/*	logger.Init(cfg.LogLevel)
-		slog.Info("Starting caching reverse proxy",
-			"port", cfg.Port,
-			"target", cfg.TargetURL,
-			"cache_ttl", cfg.CacheTTL,
-		)
-	*/
+	level := logger.ParseLevel(cfg.LogLevel)
+	logger.Init(level)
+	slog.Info("Starting caching reverse proxy",
+		"port", cfg.Port,
+		"target", cfg.TargetURL,
+		"cache_ttl", cfg.CacheTTL,
+	)
+
 	// 3. Создание прокси с кэшем (LFU)
-	proxy, err := proxy.NewReverseProxy(cfg)
+	proxy, err := proxy.NewReverseProxy(cfg.TargetURL, cfg.CacheTTL)
 	if err != nil {
 		slog.Error("Failed to create proxy", "error", err)
 		os.Exit(1)
