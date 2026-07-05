@@ -9,20 +9,21 @@ import (
 	"time"
 
 	"github.com/DmiBoev/caching-proxy/internal/cache"
+	"github.com/DmiBoev/caching-proxy/internal/config"
 )
 
 // Proxy основной обработчик
 type Proxy struct {
 	target          *url.URL
 	reverseProxy    *httputil.ReverseProxy
-	cache           *cache.Cache
+	cache           cache.Cache
 	cacheTTL        time.Duration
 	cacheableStatus map[int]bool
 }
 
 // NewReverseProxy создаёт новый прокси
-func NewReverseProxy(targetURL string, cacheTTL time.Duration) (*Proxy, error) {
-	parsed, err := url.Parse(targetURL)
+func NewReverseProxy(cfg *config.Config) (*Proxy, error) {
+	parsed, err := url.Parse(cfg.TargetURL)
 	if err != nil {
 		return nil, err
 	}
@@ -35,11 +36,12 @@ func NewReverseProxy(targetURL string, cacheTTL time.Duration) (*Proxy, error) {
 		// можно добавить другие
 	}
 
+	c := cache.NewLFU(cfg.MaxCacheItems, cfg.CacheTTL)
+
 	return &Proxy{
 		target:          parsed,
 		reverseProxy:    httputil.NewSingleHostReverseProxy(parsed),
-		cache:           cache.New(cacheTTL),
-		cacheTTL:        cacheTTL,
+		cache:           c,
 		cacheableStatus: cacheable,
 	}, nil
 }
